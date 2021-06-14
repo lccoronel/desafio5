@@ -6,8 +6,6 @@ import { RichText } from 'prismic-dom';
 
 import { getPrismicClient } from '../services/prismic';
 import commonStyles from '../styles/common.module.scss';
-import calendarImg from '../assets/calendar.png';
-import userImg from '../assets/user.png';
 import styles from './home.module.scss';
 
 interface Post {
@@ -39,10 +37,16 @@ const Home: React.FC<HomeProps> = ({ postsPagination }) => {
           <a>
             <h2>{post.data.title}</h2>
             <p>{post.data.subtitle}</p>
-            <div>
-              <img src="./calendar.png" alt="Calendar" />
-              {/* <img src={userImg} alt="User" /> */}
-            </div>
+            <section>
+              <div>
+                <img src="/images/calendar.svg" alt="calendar" />
+                <p>{post.first_publication_date}</p>
+              </div>
+              <div>
+                <img src="/images/user.svg" alt="user" />
+                <p>{post.data.author}</p>
+              </div>
+            </section>
           </a>
         </Link>
       ))}
@@ -63,10 +67,18 @@ export const getStaticProps: GetStaticProps = async () => {
   const posts = postsResponse.results.map(post => {
     return {
       uid: post.uid,
-      first_publication_date: post.first_publication_date,
+      first_publication_date: new Date(
+        post.first_publication_date
+      ).toLocaleString('pt-BR', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+      }),
       data: {
         title: RichText.asText(post.data.title),
-        subtitle: 'test',
+        subtitle: post.data.content[0].body.find(
+          item => item.type === 'paragraph'
+        ).text,
         author: 'test',
       },
     };

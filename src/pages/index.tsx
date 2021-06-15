@@ -1,10 +1,10 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { GetStaticProps } from 'next';
-import Link from 'next/link';
 import Prismic from '@prismicio/client';
-import { RichText } from 'prismic-dom';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 import { getPrismicClient } from '../services/prismic';
+
 import commonStyles from '../styles/common.module.scss';
 import styles from './home.module.scss';
 
@@ -27,71 +27,62 @@ interface HomeProps {
   postsPagination: PostPagination;
 }
 
-const Home: React.FC<HomeProps> = ({ postsPagination }) => {
+export default function Home({ postsPagination }: HomeProps): JSX.Element {
   const { results } = postsPagination;
 
+  results.forEach(post => {
+    post.first_publication_date = format(
+      new Date(post.first_publication_date),
+      'dd MMM yyyy',
+      { locale: ptBR }
+    );
+  });
+
   return (
-    <div className={styles.container}>
+    <div>
       {results.map(post => (
-        <Link href="/" key={post.uid}>
-          <a>
-            <h2>{post.data.title}</h2>
-            <p>{post.data.subtitle}</p>
-            <section>
-              <div>
-                <img src="/images/calendar.svg" alt="calendar" />
-                <p>{post.first_publication_date}</p>
-              </div>
-              <div>
-                <img src="/images/user.svg" alt="user" />
-                <p>{post.data.author}</p>
-              </div>
-            </section>
-          </a>
-        </Link>
+        <div key={post.uid}>
+          <h2>{post.data.title}</h2>
+          <p>{post.data.subtitle}</p>
+          <section>
+            <div>
+              <time>{post.first_publication_date}</time>
+            </div>
+            <div>
+              <p>{post.data.author}</p>
+            </div>
+          </section>
+        </div>
       ))}
     </div>
   );
-};
+}
 
 export const getStaticProps: GetStaticProps = async () => {
   const prismic = getPrismicClient();
   const postsResponse = await prismic.query(
     [Prismic.predicates.at('document.type', 'posts')],
-    {
-      fetch: ['posts.title', 'posts.content'],
-      pageSize: 100,
-    }
+    { pageSize: 20 }
   );
 
   const posts = postsResponse.results.map(post => {
-    return {
+    const postFormatted: Post = {
       uid: post.uid,
-      first_publication_date: new Date(
-        post.first_publication_date
-      ).toLocaleString('pt-BR', {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric',
-      }),
+      first_publication_date: post.first_publication_date,
       data: {
-        title: RichText.asText(post.data.title),
-        subtitle: post.data.content[0].body.find(
-          item => item.type === 'paragraph'
-        ).text,
-        author: 'test',
+        title: post.data.title,
+        subtitle: post.data.subtitle,
+        author: post.data.author,
       },
     };
+
+    return postFormatted;
   });
 
-  const postsPagination = {
-    next_page: 0,
+  const postsPagination: PostPagination = {
+    next_page: postsResponse.next_page,
     results: posts,
   };
 
-  return {
-    props: { postsPagination },
-  };
+  return { props: { postsPagination } };
 };
-
-export default Home;

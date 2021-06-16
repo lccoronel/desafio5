@@ -2,6 +2,8 @@
   --BLACK-500: #1A1D23;
   --GRAY-400: #F8F8F8;
   --GRAY-500: #D7D7D7;
+  --PINK-500: #FF57B2;
+
 }
 
 * {
@@ -19,6 +21,6 @@ h2, p {
   font-family: 'Inter', sans-serif;
 }
 
-a {
+a, button {
   cursor: pointer;
 }

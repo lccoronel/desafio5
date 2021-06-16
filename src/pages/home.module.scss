@@ -8,6 +8,9 @@
   }
 
   .post {
+    display: block;
+    text-decoration: none;
+
     & + .post {
       margin-top: 50px;
     }
@@ -39,4 +42,14 @@
       }
     }
   }  
+
+  button {
+    color: var(--PINK-500);
+    background-color: transparent;
+    border: 0;
+    font-family: 'Inter', sans-serif;
+    font-size: 18px;
+    line-height: 22px;
+    margin-top: 50px;
+  }
 }

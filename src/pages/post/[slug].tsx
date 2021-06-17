@@ -1,4 +1,5 @@
 import { GetStaticPaths, GetStaticProps } from 'next';
+import Prismic from '@prismicio/client';
 
 import { getPrismicClient } from '../../services/prismic';
 
@@ -30,14 +31,17 @@ export default function Post({ post }: PostProps): JSX.Element {
   return <h1>{post.data.title}</h1>;
 }
 
-export const getStaticPaths = async () => {
+export const getStaticPaths: GetStaticPaths = async () => {
   const prismic = getPrismicClient();
-  // const posts = await prismic.query(TODO);
+  const posts = await prismic.query([
+    Prismic.Predicates.at('document.type', 'posts'),
+  ]);
 
-  return {
-    paths: [],
-    fallback: 'blocking',
-  };
+  const paths = posts.results.map(post => {
+    return { params: { slug: post.uid } };
+  });
+
+  return { paths, fallback: true };
 };
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
@@ -49,18 +53,21 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   const content = response.data.content.map(post => {
     return {
       heading: post.heading,
-      body: post.body.map(paragraph => ({ text: paragraph.text })),
+      body: [...post.body],
     };
   });
 
-  const post: Post = {
+  const post = {
+    uid: response.uid,
     first_publication_date: response.first_publication_date,
+    last_publication_date: response.last_publication_date,
     data: {
       title: response.data.title,
+      subtitle: response.data.subtitle,
+      author: response.data.author,
       banner: {
         url: response.data.banner.url,
       },
-      author: response.data.author,
       content,
     },
   };

@@ -2,7 +2,7 @@ import { GetStaticPaths, GetStaticProps } from 'next';
 import Prismic from '@prismicio/client';
 
 import { getPrismicClient } from '../../services/prismic';
-
+import Header from '../../components/Header';
 import commonStyles from '../../styles/common.module.scss';
 import styles from './post.module.scss';
 
@@ -28,7 +28,11 @@ interface PostProps {
 }
 
 export default function Post({ post }: PostProps): JSX.Element {
-  return <h1>{post.data.title}</h1>;
+  return (
+    <div>
+      <Header />
+    </div>
+  );
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
